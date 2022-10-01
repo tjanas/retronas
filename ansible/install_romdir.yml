@@ -1,3 +1,7 @@
+- import_playbook: retronas_system_config_run.yml
+  vars:
+    module_name: "romdir"
+    
 - hosts: localhost
 
   vars:
@@ -10,6 +14,9 @@
   tasks:
     - name: "{{ my_name }}"
       import_tasks: retronas_create_dirs.yml
+      when: filehash is defined and
+            storedhash is defined and
+            filehash.stat.checksum != storedhash.msg
 
 - import_playbook: retronas_system_config.yml
   vars:
