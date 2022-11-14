@@ -18,8 +18,8 @@
     - name: "{{ my_name }}"
       import_tasks: retronas_create_dirs.yml
       when: filehash is defined and
-            storedhash is defined and
-            filehash.stat.checksum != storedhash.msg
+          storedhash is defined and
+          filehash.stat.checksum != storedhash.stdout
 
 - import_playbook: retronas_system_config.yml
   vars:
