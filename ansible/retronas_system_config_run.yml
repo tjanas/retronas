@@ -4,7 +4,7 @@
   vars:
     my_name: "retronas hash file"
     ini_filename: "retronas_playbook_hash.ini"
-    storedhash: "{{ lookup('ini', '\"{{ module_name}}\" section=package file=/opt/retronas/config/{{ ini_filename}}') }}"
+    storedhash: "{{ lookup('ini', '\"{{ module_name}}\" section=package file=/opt/retronas/config/{{ ini_filename}}') | default(0) }}"
 
   tasks:
   - name: "{{ my_name }} - Load RetroNAS config"
@@ -29,8 +29,6 @@
     
   - debug:
       msg: "{{ storedhash }}"
-      when: retronas_hashfile is defined and
-            retronas_hashfile.stat.exists == true
 
   #- name: "{{ my_name }} - checksum playbook"
   #  stat:
