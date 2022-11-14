@@ -4,45 +4,36 @@
   vars:
     my_name: "retronas hash file"
     ini_filename: "retronas_playbook_hash.ini"
-    storedhash: "{{ lookup('ini', '\"{{ module_name}}\" section=package file=/opt/retronas/config/{{ ini_filename}}') | default(0) }}"
+    module_name: "{{ module_name | default('retronas_systems') }}"
 
   tasks:
   - name: "{{ my_name }} - Load RetroNAS config"
     include_vars: retronas_vars.yml
 
-  - name: "{{ my_name }} - checksum retronas_systems playbook"
+  - name: "{{ my_name }} - checksum playbook"
     stat:
-      path: "{{ retronas_root }}/ansible/retronas_systems.yml"
+      path: "{{ retronas_root }}/ansible/{{ module_name }}.yml"
     register: filehash
 
   - name: "{{ my_name }} - check for existing hashfile"
     stat:
-      path: "/opt/retronas/config/{{ ini_filename}}"
+      path: "{{ retronas_root }}/etc/{{ ini_filename}}"
     register: retronas_hashfile
 
   - name: "{{ my_name }} - register storedhash"
-    debug:
-      msg: "{{ lookup('ini', '{{ module_name}} section=package file=/opt/retronas/config/{{ ini_filename}}') }}"
+    shell:
+      cmd: "awk -F'= ' '/{{ module_name }}/{print $2}' {{ retronas_root }}/etc/{{ ini_filename }}"
     register: storedhash
-    when: retronas_hashfile is defined and
-          retronas_hashfile.stat.exists == true
-    
-  - debug:
-      msg: "{{ storedhash }}"
-
-  #- name: "{{ my_name }} - checksum playbook"
-  #  stat:
-  #    path: "{{ retronas_root }}/ansible/{{ module_name }}.yml"
-  #  register: filehash
-  #  when: module_name is defined
+    ignore_errors: yes
 
   - name: "{{ my_name }} - Log Package Entry"
     ini_file:
-      path: "{{ retronas_root }}/config/{{ ini_filename }}"
+      path: "{{ retronas_root }}/etc/{{ ini_filename }}"
       section: "package"
       option: "{{ module_name }}"
       value: "{{ filehash.stat.checksum }}"
       state: "present"
     when: module_name is defined and 
           filehash is defined and
-          filehash.stat.checksum != storedhash.msg
+          storedhash is defined and
+          filehash.stat.checksum != storedhash.stdout
