@@ -22,7 +22,7 @@
 
   - name: "{{ my_name }} - register storedhash"
     shell:
-      cmd: "awk -F'= ' '/{{ module_name }}/{print $2}' {{ retronas_root }}/etc/{{ ini_filename }} || echo 0"
+      cmd: "awk -F'= ' '/{{ module_prepend }}/{print $2}' {{ retronas_root }}/etc/{{ ini_filename }} || echo 0"
     register: storedhash
     ignore_errors: yes
 
@@ -30,10 +30,10 @@
     ini_file:
       path: "{{ retronas_root }}/etc/{{ ini_filename }}"
       section: "package"
-      option: "{{ module_name }}"
+      option: "{{ module_prepend }}"
       value: "{{ filehash.stat.checksum }}"
       state: "present"
-    when: module_name is defined and 
+    when: module_prepend is defined and 
           filehash is defined and
           storedhash is defined and
           filehash.stat.checksum != storedhash.stdout
