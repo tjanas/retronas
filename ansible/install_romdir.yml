@@ -1,6 +1,4 @@
 - import_playbook: retronas_system_config_run.yml
-  vars:
-    module_name: "romdir"
     
 - hosts: localhost
 

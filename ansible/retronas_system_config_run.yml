@@ -4,7 +4,7 @@
   vars:
     my_name: "retronas hash file"
     ini_filename: "retronas_playbook_hash.ini"
-    module_name: "{{ module_name | default('retronas_systems') }}"
+    module_name: "retronas_systems"
 
   tasks:
   - name: "{{ my_name }} - Load RetroNAS config"
@@ -22,7 +22,7 @@
 
   - name: "{{ my_name }} - register storedhash"
     shell:
-      cmd: "awk -F'= ' '/{{ module_name }}/{print $2}' {{ retronas_root }}/etc/{{ ini_filename }}"
+      cmd: "awk -F'= ' '/{{ module_name }}/{print $2}' {{ retronas_root }}/etc/{{ ini_filename }} || echo 0"
     register: storedhash
     ignore_errors: yes
 
