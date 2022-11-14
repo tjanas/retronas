@@ -1260,16 +1260,6 @@
                 },
                 {
                     "index":"04",
-                    "title": "Extra Dir(s)",
-                    "description": "Update extra RetroNAS directories (bios, saves etc)",
-                    "id":"extradirs",
-                    "prompt": "",
-                    "type": "install",
-                    "group":"",
-                    "command": "extradirs"
-                },
-                {
-                    "index":"05",
                     "title": "GNU/Linux",
                     "description": "Update GNU/Linux Operating System packages",
                     "id":"update-system",
@@ -1279,7 +1269,7 @@
                     "command": "update-system"
                 },
                 {
-                    "index":"06",
+                    "index":"05",
                     "title": "History",
                     "description": "Update History for GNU/Linux Operating System packages",
                     "id":"update-system-history",
@@ -1289,7 +1279,7 @@
                     "command": "update-system-history"
                 },
                 {
-                    "index":"07",
+                    "index":"99",
                     "title": "Branch",
                     "description": "Manage the active GIT branch, (test new features, etc)",
                     "id":"git-switch-branch",
