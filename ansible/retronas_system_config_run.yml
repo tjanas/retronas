@@ -1,39 +1,78 @@
 ---
 - hosts: localhost
+  gather_facts: no
 
   vars:
     my_name: "retronas hash file"
     ini_filename: "retronas_playbook_hash.ini"
-    module_name: "retronas_systems"
 
   tasks:
   - name: "{{ my_name }} - Load RetroNAS config"
     include_vars: retronas_vars.yml
-
-  - name: "{{ my_name }} - checksum playbook"
-    stat:
-      path: "{{ retronas_root }}/ansible/{{ module_name }}.yml"
-    register: filehash
 
   - name: "{{ my_name }} - check for existing hashfile"
     stat:
       path: "{{ retronas_root }}/etc/{{ ini_filename}}"
     register: retronas_hashfile
 
-  - name: "{{ my_name }} - register storedhash"
+  #### play
+
+  - name: "{{ module_name }} - checksum play"
+    stat:
+      path: "{{ retronas_root }}/ansible/install_{{ module_name }}.yml"
+    register: filehash
+
+  - name: "{{ module_name }} - register storedhash play"
     shell:
-      cmd: "awk -F'= ' '/{{ module_prepend }}/{print $2}' {{ retronas_root }}/etc/{{ ini_filename }} || echo 0"
+      cmd: "awk -F'= ' '/{{ module_name }}/{print $2}' {{ retronas_root }}/etc/{{ ini_filename }} || echo 0"
     register: storedhash
     ignore_errors: yes
 
-  - name: "{{ my_name }} - Log Package Entry"
+  - name: "{{ module_name }} - set fact"
+    set_fact:
+      run_play: "{{ true if filehash.stat.checksum != storedhash.stdout else false }}"
+    when: filehash is defined and
+          storedhash is defined
+  
+  - name: "{{ module_name }} - Log Package Entry"
     ini_file:
       path: "{{ retronas_root }}/etc/{{ ini_filename }}"
       section: "package"
-      option: "{{ module_prepend }}"
+      option: "{{ module_name }}"
       value: "{{ filehash.stat.checksum }}"
       state: "present"
-    when: module_prepend is defined and 
-          filehash is defined and
-          storedhash is defined and
-          filehash.stat.checksum != storedhash.stdout
+    when: run_play is true
+
+  #### retronas_systems
+
+  - name: "retronas_systems - checksum"
+    stat:
+      path: "{{ retronas_root }}/ansible/retronas_systems.yml"
+    register: retronas_systems_hash
+    when: romdir is true
+
+  - name: "retronas_systems - register storedhash"
+    shell:
+      cmd: "awk -F'= ' '/retronas_systems/{print $2}' {{ retronas_root }}/etc/{{ ini_filename }} || echo 0"
+    register: retronas_systems_storedhash
+    ignore_errors: yes
+    when: romdir is true
+
+  - name: "retronas_systems - set fact"
+    set_fact:
+      run_retronas_systems: "{{ true if retronas_systems_hash.stat.checksum != retronas_systems_storedhash.stdout else false }}"
+    when: romdir is true and
+          retronas_systems_hash is defined and
+          retronas_systems_storedhash is defined
+
+  - name: "retronas_systems - Log Package Entry"
+    ini_file:
+      path: "{{ retronas_root }}/etc/{{ ini_filename }}"
+      section: "package"
+      option: "retronas_systems"
+      value: "{{ retronas_systems_hash.stat.checksum }}"
+      state: "present"
+    when: run_retronas_systems is true
+
+  - debug:
+      msg: "{{ run_play }} - {{ run_retronas_systems }}"

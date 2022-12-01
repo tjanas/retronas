@@ -1,6 +1,7 @@
 - import_playbook: retronas_system_config_run.yml
   vars:
-    module_prepend: "extradirs"
+    module_name: "extradirs"
+    romdir: yes
 
 - hosts: localhost
   gather_facts: no
@@ -16,11 +17,13 @@
       - { name: "wallpapers", enabled: yes, systems: no }
 
   tasks:
+
+    - meta: end_play
+      when: run_play is false and
+            run_retronas_systems is false
+
     - name: "{{ my_name }}"
       import_tasks: retronas_create_dirs.yml
-      when: filehash is defined and
-          storedhash is defined and
-          filehash.stat.checksum != storedhash.stdout
 
 - import_playbook: retronas_system_config.yml
   vars:

@@ -1,4 +1,8 @@
 # Dependencies
+- import_playbook: retronas_system_config_run.yml
+  vars:
+    module_name: "cockpit-packages"
+
 - import_playbook: install_filesystems.yml
 - import_playbook: install_cockpit.yml
 
@@ -16,6 +20,8 @@
       - cockpit-packages.sh
 
   tasks:
+  - meta: end_play
+    when: run_play is false
 
   - name: "{{ my_name }} - Load RetroNAS config"
     include_vars: retronas_vars.yml

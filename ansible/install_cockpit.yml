@@ -1,4 +1,8 @@
 # Dependencies
+- import_playbook: retronas_system_config_run.yml
+  vars:
+    module_name: "cockpit"
+
 - import_playbook: install_filesystems.yml
 
 - hosts: localhost
@@ -14,6 +18,9 @@
       - aria2
 
   tasks:
+
+  - meta: end_play
+    when: run_play is false
 
   - name: "{{ my_name }} - Load RetroNAS config"
     include_vars: retronas_vars.yml

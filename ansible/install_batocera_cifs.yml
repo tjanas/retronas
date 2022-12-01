@@ -2,6 +2,11 @@
 - import_playbook: install_romdir.yml
 - import_playbook: install_extradirs.yml
 
+- import_playbook: retronas_system_config_run.yml
+  vars:
+    module_name: "batocera_cifs"
+    romdir: yes
+
 - hosts: localhost
   gather_facts: no
 
@@ -18,6 +23,10 @@
       - { src: 'sega/megadrive', dest: 'msu-md' }
 
   tasks:
+
+  - meta: end_play
+    when: run_play is false and
+          run_retronas_systems is false
 
   - name: "{{ my_name }} - Include systems map"
     include_vars: "retronas_systems.yml"

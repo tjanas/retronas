@@ -1,6 +1,7 @@
 - import_playbook: retronas_system_config_run.yml
   vars:
-    module_prepend: "romdir"
+    module_name: "romdir"
+    romdir: yes
     
 - hosts: localhost
   gather_facts: no
@@ -13,6 +14,11 @@
       - { name: "roms", enabled: yes, systems: yes }
 
   tasks:
+
+    - meta: end_play
+      when: run_play is false and
+            run_retronas_systems is false
+
     - name: "{{ my_name }}"
       import_tasks: retronas_create_dirs.yml
       when: filehash is defined and
