@@ -2,10 +2,16 @@
 - import_playbook: install_filesystems.yml
 
 - hosts: localhost
+  gather_facts: yes
 
   vars:
     - my_name: "Cockpit"
     - my_file: "install_cockpit"
+    - my_service: "cockpit"
+
+    - my_packages:
+      - gnupg
+      - aria2
 
   tasks:
 
@@ -13,12 +19,9 @@
     include_vars: retronas_vars.yml
     
   - name: "{{ my_name }} - install prerequisite packages"
-    apt:
-       name: "{{ item }}"
+    package:
+       name: "{{ my_packages }}"
        state: latest
-    with_items:
-      - gnupg
-      - aria2
 
 #  - name: "{{ my_name }} - Install Debian Signing Keys 1"
 #    shell: "/usr/bin/apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 648ACFD622F3D138"
@@ -30,11 +33,13 @@
     shell:
       chdir: "/tmp"
       cmd: "aria2c --allow-overwrite=true http://ftp.debian.org/debian/pool/main/d/debian-archive-keyring/debian-archive-keyring_2021.1.1_all.deb https://mirror.aarnet.edu.au/pub/debian/pool/main/d/debian-archive-keyring/debian-archive-keyring_2021.1.1_all.deb"
+    when: ansible_distribution == "Debian"
 
   - name: "{{ my_name }} - install Debian signing keys"
     shell:
       chdir: "/tmp"
       cmd: "dpkg -i debian-archive-keyring*.deb"
+    when: ansible_distribution == "Debian"
 
   - name: "{{ my_name }} - Configure APT repo"
     apt_repository:
@@ -42,10 +47,31 @@
       state: present
       filename: debian-backports
       update_cache: no
+    when: ansible_distribution == "Debian"
+
+  - name: "{{ my_name }} - Configure APT repo for Ubuntu x86_64"
+    apt_repository:
+      repo: deb http://archive.ubuntu.com/ubuntu/ {{ ansible_distribution_release }}-backports main restricted universe multiverse
+      state: present
+      filename: "{{ ansible_distribution_release }}-backports"
+      update_cache: no
+    when: ansible_distribution == "Ubuntu" and
+          ansible_architecture == "x86_64"
+
+  - name: "{{ my_name }} - Configure APT repo for Ubuntu non x86_64 (ports)"
+    apt_repository:
+      repo: deb http://ports.ubuntu.com/ {{ ansible_distribution_release }}-backports main restricted universe multiverse
+      state: present
+      filename: "{{ ansible_distribution_release }}-backports"
+      update_cache: no
+    when: ansible_distribution == "Ubuntu" and
+          ansible_architecture != "x86_64"
 
   - name: "{{ my_name }} - Force update repo cache"
     shell:
       cmd: "/usr/bin/apt update || exit 0"
+    when: ansible_distribution == "Ubuntu" or
+          ansible_distribution == "Debian"
 
   - name: "{{ my_name }} - Install from repo"
     apt:
@@ -60,22 +86,18 @@
 
   - name: "{{ my_name }} - enable startup services"
     service:
-      name: "{{ item }}"
+      name: "{{ my_service }}"
       state: started
       enabled: yes
       daemon_reload: yes
-    with_items:
-      - cockpit
 
   handlers:
 
   - name: "{{ my_name }} - Restart service"
     service:
-      name: "{{ item }}"
+      name: "{{ my_service }}"
       state: restarted
       daemon_reload: yes
-    with_items:
-      - cockpit
 
 - import_playbook: retronas_system_config.yml
   vars:

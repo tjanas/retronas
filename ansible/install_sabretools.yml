@@ -1,24 +1,33 @@
+- hosts: localhost
+  gather_facts: yes
+
 # Dependencies
 - import_playbook: install_dotnetcore3.yml
+  when: ansible_architecture == "x86_64"
 
 - hosts: localhost
+  gather_facts: yes
 
   vars:
     - my_name: "SabreTools"
     - my_file: "install_sabretools"
 
+    - my_packages:
+      - git
+      - coreutils
+
   tasks:
+
+  - meta: end_play
+    when: ansible_architecture != "x86_64"
 
   - name: "{{ my_name }} - Load RetroNAS config"
     include_vars: retronas_vars.yml
 
   - name: "{{ my_name }} - Install dependencies"
     apt:
-       name: "{{ item }}"
+       name: "{{ my_packages }}"
        state: latest
-    with_items:
-      - git
-      - coreutils
 
   - name: "{{ my_name }} - Prepare installer script"
     template:
@@ -38,3 +47,4 @@
   vars:
     module_name: "sabretools"
     module_state: "present"
+  when: ansible_architecture == "x86_64"
