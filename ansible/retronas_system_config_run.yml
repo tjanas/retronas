@@ -73,6 +73,3 @@
       value: "{{ retronas_systems_hash.stat.checksum }}"
       state: "present"
     when: run_retronas_systems is true
-
-  - debug:
-      msg: "{{ run_play }} - {{ run_retronas_systems }}"
