@@ -1,12 +1,11 @@
 # Dependencies
+- import_playbook: install_romdir.yml
+- import_playbook: install_extradirs.yml
+
 - import_playbook: retronas_system_config_run.yml
   vars:
     module_name: "mister_cifs"
     romdir: yes
-
-
-- import_playbook: install_romdir.yml
-- import_playbook: install_extradirs.yml
 
 - hosts: localhost
   gather_facts: no

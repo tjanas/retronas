@@ -1,5 +1,8 @@
 # Dependencies
 - import_playbook: install_dotnetcore6.yml
+- import_playbook: retronas_system_config_run.yml
+  vars:
+    module_name: "webone"
 
 - hosts: localhost
   gather_facts: no
@@ -16,6 +19,9 @@
       - coreutils
 
   tasks:
+
+  - meta: end_play
+    when: run_play is false 
 
   - name: "{{ my_name }} - Load RetroNAS config"
     include_vars: retronas_vars.yml

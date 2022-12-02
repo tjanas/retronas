@@ -1,5 +1,8 @@
 # Dependencies
 - import_playbook: install_romdir.yml
+- import_playbook: retronas_system_config_run.yml
+  vars:
+    module_name: "ps2_openps2loader"
 
 - hosts: localhost
   gather_facts: no
@@ -7,7 +10,11 @@
   vars:
     - my_name: "PS2 OpenPS2Loader"
     - my_file: "install_ps2_openps2loader"
+
   tasks:
+
+  - meta: end_play
+    when: run_play is false
 
   - name: "{{ my_name }} - Include systems map"
     include_vars: "retronas_systems.yml"
