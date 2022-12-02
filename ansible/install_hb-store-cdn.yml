@@ -6,7 +6,7 @@
     module_name: "hb-store-cdn"
 
 - hosts: localhost
-  gather_facts: no
+  gather_facts: yes
 
   vars:
     - my_name: hb-store-cdn
